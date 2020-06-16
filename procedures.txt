@@ -1,0 +1,64 @@
+create or replace PROCEDURE GET_RES_MEALS 
+(RES in VARCHAR2 ,RES_meal out sys_refcursor)
+as 
+BEGIN
+open res_meal for 
+  SELECT MEALNAME from meals where RESNAME = res;
+end;
+
+
+create or replace PROCEDURE update_user
+(ouname in VARCHAR2,pass in VARCHAR2,nam in VARCHAR2,addre in VARCHAR2)
+as 
+BEGIN
+UPDATE users set password=pass , name= nam, address= addre where username= ouname;
+end ;
+
+create or replace PROCEDURE makeorder 
+(usen in VARCHAR2 ,resn in VARCHAR2 ,mealn in VARCHAR2,orders_id in NUMBER,countx in number,addresses in VARCHAR2,tipspay in NUMBER,total_pay out NUMBER,c2 out NUMBER)
+as
+temp NUMBER;
+temp2 VARCHAR2(20);
+pricetemp VARCHAR2(20);
+c1 NUMBER ;
+BEGIN
+c2:= supplier_seq.nextval;
+SELECT username into temp2 from users where usertype='d';
+insert into orders values (c2);
+insert into order_details values(c2, resn, mealn, countx) ;
+select price into temp from meals where mealname= mealn and resname = resn;
+total_pay:= (temp*countx)+ tipspay;
+insert into order_delivery_details values(usen, temp2, c2, addresses, tipspay, total_pay) ;
+end;
+
+
+create or replace PROCEDURE delete_order
+(o_id in number)
+as
+begin 
+delete from ORDER_DELIVERY_DETAILS where ORDER_ID=o_id;
+delete from order_details where ORDER_ID=o_id;
+delete from orders where ORDER_ID=o_id;
+end;
+
+create or replace
+PROCEDURE addtoorder
+(usen in VARCHAR2 ,resn in VARCHAR2 ,mealn in VARCHAR2,orders_id in NUMBER,countx in number,prevpay in NUMBER,tpay out NUMBER)
+as
+temp NUMBER;
+temp2 VARCHAR2(20);
+c NUMBER ;
+BEGIN
+SELECT  username into temp2 from users where usertype='d';
+insert into order_details values(orders_id, resn, mealn, countx) ;
+select price into temp from meals where mealname= mealn;
+tpay:= (temp*countx)+prevpay;
+update order_delivery_details  set totalpay= tpay;
+end;
+
+create or replace PROCEDURE view_orderid
+(idc in NUMBER  ,output out NUMBER  )
+as
+BEGIN
+select ORDER_ID into output from ORDERS where order_id=idc;
+end;
